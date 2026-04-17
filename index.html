@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PETAL.PIXEL | Bespoke Florist & Luxury Gift Studio</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,900;1,6..96,400&family=Plus+Jakarta+Sans:wght@200;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: #d4af37;
+            --rose: #fb7185;
+            --bg: #030303;
+            --accent: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            color: #fff;
+            cursor: none;
+        }
+
+        h1, h2, h3, .serif { font-family: 'Bodoni Moda', serif; }
+
+        /* Custom Cursor */
+        #cursor-ring {
+            position: fixed; width: 40px; height: 40px;
+            border: 1px solid var(--gold);
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%); transition: transform 0.1s ease-out;
+            mix-blend-difference: exclusion;
+        }
+
+        #cursor-dot {
+            position: fixed; width: 6px; height: 6px;
+            background: white; border-radius: 50%;
+            pointer-events: none; z-index: 10000;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 3D Background */
+        #canvas-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: 0; pointer-events: none; opacity: 0.6;
+        }
+
+        /* Sticky Pricing Header */
+        .pricing-banner {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            background: rgba(10,10,10,0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 10px; font-size: 11px; letter-spacing: 0.2em;
+            text-align: center; text-transform: uppercase; font-weight: 700;
+            color: var(--gold);
+        }
+
+        .lux-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative; overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .lux-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .image-zoom {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .lux-card:hover .image-zoom { transform: scale(1.1); }
+
+        .order-btn {
+            background: transparent; border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px; font-size: 10px; font-weight: 800;
+            letter-spacing: 0.3em; text-transform: uppercase;
+            transition: all 0.4s; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        .order-btn:hover {
+            background: #fff; color: #000; border-color: #fff;
+        }
+
+        .wa-btn:hover { background: #25D366; color: white; border-color: #25D366; }
+
+        .gold-glow { text-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+
+        .reveal-up { transform: translateY(50px); opacity: 0; }
+
+        /* Category Sidebar navigation for Desktop */
+        .category-nav {
+            position: fixed; left: 40px; top: 50%; transform: translateY(-50%);
+            z-index: 50; display: flex; flex-direction: column; gap: 20px;
+        }
+        .cat-dot {
+            width: 8px; height: 8px; border: 1px solid var(--gold);
+            border-radius: 50%; transition: 0.3s;
+        }
+        .cat-dot:hover { background: var(--gold); }
+
+        @media (max-width: 768px) {
+            .category-nav { display: none; }
+            .hero-title { font-size: 4rem !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor-ring"></div>
+    <div id="cursor-dot"></div>
+    <div id="canvas-container"></div>
+
+    <header class="pricing-banner">
+        For Detailed Pricing & Custom Catalogues: 
+        <a href="https://wa.me/918053351085" class="underline ml-2 hover:text-white">DM on WhatsApp</a> or 
+        <a href="https://www.instagram.com/petals.pixels_/" class="underline ml-2 hover:text-white">Instagram</a>
+    </header>
+
+    <div class="category-nav">
+        <a href="#flowers" title="Flowers" class="cat-dot"></a>
+        <a href="#specialized" title="Specialized" class="cat-dot"></a>
+        <a href="#gifts" title="Gifts" class="cat-dot"></a>
+        <a href="#greenery" title="Plants" class="cat-dot"></a>
+        <a href="#custom" title="Custom" class="cat-dot"></a>
+    </div>
+
+    <!-- Hero -->
+    <section class="min-h-screen flex items-center justify-center relative z-10 px-6">
+        <div class="text-center max-w-4xl">
+            <span class="block text-[10px] tracking-[1.5em] uppercase text-gold mb-6 font-bold opacity-0 hero-el">Artisan Floristry Studio</span>
+            <h1 class="hero-title text-8xl md:text-9xl font-black italic serif gold-glow mb-8 opacity-0 hero-el">PETAL.<span class="text-white not-italic">PIXEL</span></h1>
+            <p class="text-gray-400 text-lg md:text-xl font-light leading-relaxed mb-12 opacity-0 hero-el">
+                The absolute peak of floral design and luxury gifting. We transform botanical elements into high-end emotional experiences.
+            </p>
+            <div class="flex flex-wrap justify-center gap-6 opacity-0 hero-el">
+                <a href="#flowers" class="px-10 py-4 bg-white text-black font-bold text-[10px] tracking-widest uppercase rounded-full hover:bg-gold transition-colors">Explore Studio</a>
+                <a href="https://wa.me/918053351085" class="px-10 py-4 border border-white/20 text-white font-bold text-[10px] tracking-widest uppercase rounded-full hover:border-gold transition-colors">Direct Inquiry</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Studio Sections -->
+    <main class="relative z-10">
+
+        <!-- Section: Fresh Flowers -->
+        <section id="flowers" class="py-32 px-6 container mx-auto">
+            <div class="mb-20 text-center">
+                <h2 class="serif text-5xl md:text-7xl mb-4 italic">Fresh Flower Arrangements</h2>
+                <div class="h-[1px] w-24 bg-gold mx-auto"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-10">
+                <!-- Item 1 -->
+                <div class="lux-card reveal-up">
+                    <div class="aspect-[4/5] overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=800" class="image-zoom" alt="Roses">
+                    </div>
+                    <div class="p-8">
+                        <span class="text-[9px] text-gold tracking-widest uppercase mb-2 block">Signature Collection</span>
+                        <h3 class="serif text-2xl mb-4">Rose Elite Suite</h3>
+                        <p class="text-gray-400 text-sm mb-6">Premium Red, Pink, White & Sun-kissed Yellow Roses.</p>
+                        <button onclick="order('Roses')" class="order-btn wa-btn">Inquire via WhatsApp</button>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="lux-card reveal-up">
+                    <div class="aspect-[4/5] overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1525268323446-0505b6fe5bb8?q=80&w=800" class="image-zoom" alt="Lilies">
+                    </div>
+                    <div class="p-8">
+                        <span class="text-[9px] text-gold tracking-widest uppercase mb-2 block">Exotic Collection</span>
+                        <h3 class="serif text-2xl mb-4">Imperial Lilies & Orchids</h3>
+                        <p class="text-gray-400 text-sm mb-6">Fragrant Lilies mixed with rare tropical Orchids.</p>
+                        <button onclick="order('Lilies')" class="order-btn wa-btn">Inquire via WhatsApp</button>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="lux-card reveal-up">
+                    <div class="aspect-[4/5] overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1596438459194-f275f413d6ff?q=80&w=800" class="image-zoom" alt="Sunflowers">
+                    </div>
+                    <div class="p-8">
+                        <span class="text-[9px] text-gold tracking-widest uppercase mb-2 block">Season's Best</span>
+                        <h3 class="serif text-2xl mb-4">Golden Solar Basket</h3>
+                        <p class="text-gray-400 text-sm mb-6">Giant Sunflowers and vibrant Chrysanthemums.</p>
+                        <button onclick="order('Sunflowers')" class="order-btn wa-btn">Inquire via WhatsApp</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Specialized -->
+        <section id="specialized" class="py-32 bg-white/5">
+            <div class="container mx-auto px-6">
+                <div class="flex flex-col md:flex-row gap-20 items-center">
+                    <div class="md:w-1/2 reveal-up">
+                        <h2 class="serif text-6xl italic mb-6">Specialized Event Artistry</h2>
+                        <p class="text-gray-400 text-lg mb-8 leading-relaxed">
+                            Bespoke arrangements for life's most meaningful milestones. From elegant wedding stages to respectful funeral tributes and grand anniversary vases.
+                        </p>
+                        <ul class="grid grid-cols-2 gap-4 text-xs tracking-widest uppercase font-bold text-gold mb-10">
+                            <li>• Wedding Suites</li>
+                            <li>• Funeral Tributes</li>
+                            <li>• Anniversary Boxes</li>
+                            <li>• Flower Baskets</li>
+                        </ul>
+                        <button onclick="order('Special Events')" class="px-12 py-5 bg-gold text-black font-bold uppercase tracking-widest text-xs hover:bg-white transition-all">Book Consultation</button>
+                    </div>
+                    <div class="md:w-1/2 grid grid-cols-2 gap-4 reveal-up">
+                        <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=600" class="rounded-lg shadow-2xl" alt="Boxed">
+                        <img src="https://images.unsplash.com/photo-1516541196182-6bbb72d10073?q=80&w=600" class="mt-10 rounded-lg shadow-2xl" alt="Basket">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Gifts -->
+        <section id="gifts" class="py-32 px-6 container mx-auto">
+            <div class="mb-20">
+                <span class="text-gold uppercase tracking-[0.5em] text-[10px] font-bold">The Luxury Hamper</span>
+                <h2 class="serif text-5xl md:text-7xl italic">Gourmet & Gifts</h2>
+            </div>
+            <div class="grid md:grid-cols-4 gap-6">
+                <!-- Gift 1 -->
+                <div class="lux-card reveal-up p-6">
+                    <h3 class="serif text-xl mb-2">Gourmet Box</h3>
+                    <p class="text-xs text-gray-500 mb-6 uppercase tracking-widest">Treats & Sweets</p>
+                    <img src="https://images.unsplash.com/photo-1548946522-4a313e8972a4?q=80&w=400" class="w-full h-40 object-cover mb-6 rounded" alt="Choc">
+                    <button onclick="order('Gourmet Gift')" class="order-btn">Details</button>
+                </div>
+                <!-- Gift 2 -->
+                <div class="lux-card reveal-up p-6">
+                    <h3 class="serif text-xl mb-2">Luxury Plush</h3>
+                    <p class="text-xs text-gray-500 mb-6 uppercase tracking-widest">Premium Toys</p>
+                    <img src="https://images.unsplash.com/photo-1559440666-37421326194f?q=80&w=400" class="w-full h-40 object-cover mb-6 rounded" alt="Toy">
+                    <button onclick="order('Plush Toy')" class="order-btn">Details</button>
+                </div>
+                <!-- Gift 3 -->
+                <div class="lux-card reveal-up p-6">
+                    <h3 class="serif text-xl mb-2">Scented Vibe</h3>
+                    <p class="text-xs text-gray-500 mb-6 uppercase tracking-widest">Signature Candles</p>
+                    <img src="https://images.unsplash.com/photo-1603006905003-be475563bc59?q=80&w=400" class="w-full h-40 object-cover mb-6 rounded" alt="Candle">
+                    <button onclick="order('Candles')" class="order-btn">Details</button>
+                </div>
+                <!-- Gift 4 -->
+                <div class="lux-card reveal-up p-6">
+                    <h3 class="serif text-xl mb-2">Royal Suede</h3>
+                    <p class="text-xs text-gray-500 mb-6 uppercase tracking-widest">Velvet Boxes</p>
+                    <img src="https://images.unsplash.com/photo-1513201099705-a9746e1e201f?q=80&w=400" class="w-full h-40 object-cover mb-6 rounded" alt="Suede">
+                    <button onclick="order('Luxury Box')" class="order-btn">Details</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Greenery & Supplies -->
+        <section id="greenery" class="py-32 px-6 container mx-auto">
+            <div class="grid md:grid-cols-2 gap-10">
+                <div id="greenery" class="reveal-up">
+                    <span class="text-rose uppercase tracking-widest text-[9px] font-bold">Plants & Succulents</span>
+                    <h2 class="serif text-5xl mb-10">Living Decor</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 p-4 rounded hover:bg-white/10 transition cursor-pointer" onclick="order('Potted Plants')">
+                            <h4 class="serif text-lg">Potted Palms</h4>
+                            <p class="text-[9px] uppercase tracking-tighter opacity-50">Indoor Luxury</p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded hover:bg-white/10 transition cursor-pointer" onclick="order('Succulents')">
+                            <h4 class="serif text-lg">Succulent Zen</h4>
+                            <p class="text-[9px] uppercase tracking-tighter opacity-50">Low Maintenance</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="custom" class="reveal-up">
+                    <span class="text-gold uppercase tracking-widest text-[9px] font-bold">Personalized Goods</span>
+                    <h2 class="serif text-5xl mb-10">Custom Keepsakes</h2>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="flex items-center gap-6 bg-white/5 p-6 rounded group cursor-pointer" onclick="order('Custom Mugs/Cushions')">
+                            <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-gold transition">🎁</div>
+                            <div>
+                                <h4 class="serif text-xl">Custom Mugs & Cushions</h4>
+                                <p class="text-[9px] uppercase tracking-widest opacity-50">Your memories on fabric & ceramic</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Supplies Footer Section -->
+        <section class="py-20 bg-black border-y border-white/5">
+            <div class="container mx-auto px-6 text-center">
+                <span class="text-[10px] uppercase tracking-[0.5em] opacity-40 mb-10 block">Studio Essentials</span>
+                <div class="flex flex-wrap justify-center gap-12 grayscale opacity-40">
+                    <span class="serif text-2xl">ARTISAN VASES</span>
+                    <span class="serif text-2xl">SILK RIBBONS</span>
+                    <span class="serif text-2xl">DESIGNER WRAPS</span>
+                    <span class="serif text-2xl">PREMIUM POTS</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 py-20 px-6 bg-black">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+            <div>
+                <h2 class="serif text-4xl mb-2">PETAL.PIXEL</h2>
+                <p class="text-[9px] tracking-[0.5em] uppercase opacity-40">Elite Gifting Studio © 2024</p>
+            </div>
+            <div class="flex gap-10">
+                <a href="https://wa.me/918053351085" class="text-[10px] font-bold tracking-[0.3em] uppercase hover:text-gold">WhatsApp</a>
+                <a href="https://www.instagram.com/petals.pixels_/" class="text-[10px] font-bold tracking-[0.3em] uppercase hover:text-gold">Instagram</a>
+                <a href="mailto:studio@petalpixel.com" class="text-[10px] font-bold tracking-[0.3em] uppercase hover:text-gold">Email</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth Scroll initialization
+        const lenis = new Lenis();
+        function raf(t) { lenis.raf(t); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+
+        // Concierge Order Function
+        function order(item) {
+            const msg = `Hi PETAL.PIXEL! 🌸 I'm interested in the "${item}". Can you share the pricing and delivery options?`;
+            window.open(`https://wa.me/918053351085?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        // Custom Cursor Logic
+        const ring = document.getElementById('cursor-ring');
+        const dot = document.getElementById('cursor-dot');
+        let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            dot.style.left = mouseX + 'px';
+            dot.style.top = mouseY + 'px';
+        });
+
+        function animateCursor() {
+            ringX += (mouseX - ringX) * 0.15;
+            ringY += (mouseY - ringY) * 0.15;
+            ring.style.left = ringX + 'px';
+            ring.style.top = ringY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // 3D Visual Aura
+        let scene, camera, renderer, particles;
+        function init3D() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            const geo = new THREE.BufferGeometry();
+            const count = 1500;
+            const pos = new Float32Array(count * 3);
+            for(let i=0; i<count*3; i++) pos[i] = (Math.random() - 0.5) * 100;
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            
+            const mat = new THREE.PointsMaterial({ color: 0xd4af37, size: 0.05, transparent: true, opacity: 0.5 });
+            particles = new THREE.Points(geo, mat);
+            scene.add(particles);
+            camera.position.z = 40;
+        }
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            particles.rotation.y += 0.001;
+            particles.rotation.x += 0.0005;
+            
+            // React to scroll
+            particles.position.y = window.scrollY * 0.01;
+            
+            renderer.render(scene, camera);
+        }
+
+        // Animations with GSAP
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Hero Reveal
+        gsap.to(".hero-el", {
+            opacity: 1,
+            y: 0,
+            stagger: 0.2,
+            duration: 1.5,
+            ease: "expo.out",
+            delay: 0.5
+        });
+
+        // Scroll Reveals
+        gsap.utils.toArray(".reveal-up").forEach(elem => {
+            gsap.to(elem, {
+                scrollTrigger: {
+                    trigger: elem,
+                    start: "top 85%",
+                },
+                opacity: 1,
+                y: 0,
+                duration: 1.2,
+                ease: "power3.out"
+            });
+        });
+
+        window.onload = () => {
+            init3D();
+            animate3D();
+        };
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
